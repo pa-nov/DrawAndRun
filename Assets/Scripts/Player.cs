@@ -1,3 +1,4 @@
+using Dreamteck.Splines;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,8 +12,7 @@ public class Player : MonoBehaviour
     public GameObject[] DefaultCharacters;
 
     private GameObject[] Characters;
-    private int Players = 0, PlayersWin = 0;
-    private bool CanMove = false;
+    private int Players = 0;
 
 
     private void Start()
@@ -20,13 +20,21 @@ public class Player : MonoBehaviour
         Instance = this;
         Characters = DefaultCharacters;
         Players = Characters.Length;
+        this.GetComponent<SplineFollower>().onEndReached += Player_onEndReached;
     }
-    private void FixedUpdate()
+
+    private void Player_onEndReached()
     {
-        if (CanMove)
+        foreach (GameObject Character in Characters)
         {
-            this.transform.position += new Vector3(0, 0, 0.1f);
+            Character.GetComponent<Character>().Animator.Play("Win");
+            Character.transform.GetChild(0).localPosition = new(0, 0.35f, 0);
         }
+        this.GetComponent<SplineFollower>().enabled = false;
+    }
+
+    private void Update()
+    {
         Camera.main.transform.position = this.transform.position + new Vector3(0, 10, -15);
     }
 
@@ -56,7 +64,7 @@ public class Player : MonoBehaviour
             }
             else
             {
-                GameObject Effect = Instantiate(DestroyEffect, character.transform.position, character.transform.rotation);
+                Instantiate(DestroyEffect, character.transform.position, character.transform.rotation);
                 Destroy(character);
                 Players--;
             }
@@ -71,7 +79,7 @@ public class Player : MonoBehaviour
     }
     public void MoveCharacters(List<Vector2> Path, Vector2 LeftDown, Vector2 RightTop)
     {
-        CanMove = true;
+        this.GetComponent<SplineFollower>().enabled = true;
         if (Path.Count > 1)
         {
             float PathLength = 0;
@@ -107,6 +115,7 @@ public class Player : MonoBehaviour
                             GetWorldPosition(NewPoint, LeftDown, RightTop).x * 4.5f,
                             0,
                             GetWorldPosition(NewPoint, LeftDown, RightTop).y * 3);
+                        Characters[i].GetComponent<Character>().Animator.Play("Running");
                         Completed = true;
                     }
                 }
@@ -129,16 +138,12 @@ public class Player : MonoBehaviour
     {
         DrawPanel.SetActive(false);
         GameOverWindow.SetActive(true);
+        this.GetComponent<SplineFollower>().enabled = false;
     }
     public void LevelComplete()
     {
         DrawPanel.SetActive(false);
         LevelCompleteWindow.SetActive(true);
-        PlayersWin++;
-        if (PlayersWin >= Players)
-        {
-            CanMove = false;
-        }
     }
 
     private Vector2 GetWorldPosition(Vector2 NewPoint, Vector2 LeftDown, Vector2 RightTop)

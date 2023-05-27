@@ -30,8 +30,6 @@ public class Character : MonoBehaviour
         if (collision.gameObject.CompareTag("Finish"))
         {
             Player.Instance.LevelComplete();
-            this.transform.GetChild(0).localPosition = new(0, 0.35f, 0);
-            Animator.Play("Win");
         }
     }
 }
