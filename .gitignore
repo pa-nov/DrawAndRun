@@ -1,0 +1,9 @@
+.vs/
+Library/
+Logs/
+obj/
+Recordings/
+.vsconfig
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+DrawAndRun.sln
